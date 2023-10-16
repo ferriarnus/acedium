@@ -19,9 +19,11 @@
     "sodium.MixinViewport",
     "sodium.MixinChunkBuilder",
     "sodium.MixinChunkJobQueue",
+    "sodium.MixinShaderLoader",
     "sodium.SodiumWorldRendererAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "minVersion": "0.8.4"
 }

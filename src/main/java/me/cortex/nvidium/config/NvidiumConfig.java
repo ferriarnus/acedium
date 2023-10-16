@@ -4,7 +4,8 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import me.cortex.nvidium.Nvidium;
-import net.fabricmc.loader.api.FabricLoader;
+import net.minecraftforge.fml.loading.FMLConfig;
+import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -55,8 +56,6 @@ public class NvidiumConfig {
     }
 
     private static Path getConfigPath() {
-        return FabricLoader.getInstance()
-                .getConfigDir()
-                .resolve("nvidium-config.json");
+        return FMLPaths.GAMEDIR.get().resolve(FMLConfig.defaultConfigPath()).resolve("nvidium-config.json");
     }
 }

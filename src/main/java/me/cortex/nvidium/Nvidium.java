@@ -1,17 +1,19 @@
 package me.cortex.nvidium;
 
 import me.cortex.nvidium.config.NvidiumConfig;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.util.Util;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.loading.FMLLoader;
 import org.lwjgl.opengl.GL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 //NOTE: with sodium async bfs, just reimplement the bfs dont try to convert sodiums bfs into async
+@Mod(Nvidium.MOD_ID)
 public class Nvidium {
-    public static final String MOD_VERSION;
+    public static final String MOD_ID = "nvidium";
+    public static String MOD_VERSION;
     public static final Logger LOGGER = LoggerFactory.getLogger("Nvidium");
     public static boolean IS_COMPATIBLE = false;
     public static boolean IS_ENABLED = false;
@@ -22,9 +24,9 @@ public class Nvidium {
     public static NvidiumConfig config = NvidiumConfig.loadOrCreate();
 
     static {
-        ModContainer mod = (ModContainer) FabricLoader.getInstance().getModContainer("nvidium").orElseThrow(NullPointerException::new);
-        MOD_VERSION = mod.getMetadata().getVersion().getFriendlyString();
+        MOD_VERSION = FMLLoader.getLoadingModList().getModFileById(MOD_ID).versionString();
     }
+
     //TODO: basicly have the terrain be a virtual geometry buffer
     // once it gets too full, start culling via a callback task system
     // which executes a task on the gpu and calls back once its done
