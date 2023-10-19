@@ -56,6 +56,6 @@ public class NvidiumConfig {
     }
 
     private static Path getConfigPath() {
-        return FMLPaths.GAMEDIR.get().resolve(FMLConfig.defaultConfigPath()).resolve("nvidium-config.json");
+        return FMLPaths.CONFIGDIR.get().resolve("nvidium-config.json");
     }
 }

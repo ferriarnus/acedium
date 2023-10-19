@@ -2,7 +2,10 @@ package me.cortex.nvidium;
 
 import me.cortex.nvidium.config.NvidiumConfig;
 import net.minecraft.util.Util;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
 import net.minecraftforge.fml.loading.FMLLoader;
 import org.lwjgl.opengl.GL;
 import org.slf4j.Logger;
@@ -10,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 
 //NOTE: with sodium async bfs, just reimplement the bfs dont try to convert sodiums bfs into async
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT, modid = Nvidium.MOD_ID)
 @Mod(Nvidium.MOD_ID)
 public class Nvidium {
     public static final String MOD_ID = "nvidium";
@@ -21,9 +25,12 @@ public class Nvidium {
     public static boolean SUPPORTS_PERSISTENT_SPARSE_ADDRESSABLE_BUFFER = true;
     public static boolean FORCE_DISABLE = false;
 
-    public static NvidiumConfig config = NvidiumConfig.loadOrCreate();
+    public static NvidiumConfig config;
 
-    static {
+    @SubscribeEvent
+    public static void modLoading(FMLConstructModEvent event) {
+        config = NvidiumConfig.loadOrCreate();
+        config.save();
         MOD_VERSION = FMLLoader.getLoadingModList().getModFileById(MOD_ID).versionString();
     }
 
