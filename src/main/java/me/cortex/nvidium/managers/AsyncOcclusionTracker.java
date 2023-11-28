@@ -9,7 +9,10 @@ import me.jellysquid.mods.sodium.client.render.chunk.RenderSection;
 import me.jellysquid.mods.sodium.client.render.chunk.RenderSectionFlags;
 import me.jellysquid.mods.sodium.client.render.chunk.occlusion.OcclusionCuller;
 import me.jellysquid.mods.sodium.client.render.viewport.Viewport;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.Camera;
 import net.minecraft.client.texture.Sprite;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -24,6 +27,7 @@ import static java.lang.Thread.MAX_PRIORITY;
 public class AsyncOcclusionTracker {
     private final OcclusionCuller occlusionCuller;
     private final Thread cullThread;
+    private final World world;
 
     private volatile boolean running = true;
     private volatile int frame = 0;
@@ -38,6 +42,8 @@ public class AsyncOcclusionTracker {
     private final Map<ChunkUpdateType, ArrayDeque<RenderSection>> outputRebuildQueue;
 
     private final float renderDistance;
+    private volatile long iterationTimeMillis;
+    private volatile boolean shouldUseOcclusionCulling = true;
 
     public AsyncOcclusionTracker(int renderDistance, Long2ReferenceMap<RenderSection> sections, World world, Map<ChunkUpdateType, ArrayDeque<RenderSection>> outputRebuildQueue) {
         this.occlusionCuller = new OcclusionCuller(sections, world);
@@ -48,6 +54,7 @@ public class AsyncOcclusionTracker {
         this.renderDistance = renderDistance * 16f;
 
         this.outputRebuildQueue = outputRebuildQueue;
+        this.world = world;
     }
 
     private void run() {
@@ -55,7 +62,7 @@ public class AsyncOcclusionTracker {
         while (running) {
             framesAhead.acquireUninterruptibly();
             if (!running) break;
-            //long startTime = System.currentTimeMillis();
+            long startTime = System.currentTimeMillis();
 
             final boolean animateVisibleSpritesOnly = SodiumClientMod.options().performance.animateOnlyVisibleTextures;
             //The reason for batching is so that ordering is strongly defined
@@ -85,7 +92,7 @@ public class AsyncOcclusionTracker {
 
             frame++;
             float searchDistance = this.getSearchDistance();
-            boolean useOcclusionCulling = true;//this.shouldUseOcclusionCulling(camera, spectator);
+            boolean useOcclusionCulling = this.shouldUseOcclusionCulling;
             try {
                 this.occlusionCuller.findVisible(visitor, viewport, searchDistance, useOcclusionCulling, frame);
             } catch (Throwable e) {
@@ -107,11 +114,13 @@ public class AsyncOcclusionTracker {
             }
             blockEntitySectionsRef.set(blockEntitySections);
             visibleAnimatedSpritesRef.set(animatedSpriteSet==null?null:animatedSpriteSet.toArray(new Sprite[0]));
-            //System.err.println(System.currentTimeMillis()-startTime);
+            iterationTimeMillis = System.currentTimeMillis() - startTime;
         }
     }
 
-    public final void update(Viewport viewport) {
+    public final void update(Viewport viewport, Camera camera, boolean spectator) {
+        this.shouldUseOcclusionCulling = this.shouldUseOcclusionCulling(camera, spectator);
+
         this.viewport = viewport;
 
         if (framesAhead.availablePermits() < 5) {//This stops a runaway when the traversal time is greater than frametime
@@ -163,6 +172,18 @@ public class AsyncOcclusionTracker {
         return distance;
     }
 
+    private boolean shouldUseOcclusionCulling(Camera camera, boolean spectator) {
+        BlockPos origin = camera.getBlockPos();
+        boolean useOcclusionCulling;
+        if (spectator && this.world.getBlockState(origin).isOpaqueFullCube(this.world, origin)) {
+            useOcclusionCulling = false;
+        } else {
+            useOcclusionCulling = MinecraftClient.getInstance().chunkCullingEnabled;
+        }
+
+        return useOcclusionCulling;
+    }
+
     private float getEffectiveRenderDistance() {
         float[] color = RenderSystem.getShaderFogColor();
         float distance = RenderSystem.getShaderFogEnd();
@@ -185,5 +206,9 @@ public class AsyncOcclusionTracker {
     @Nullable
     public Sprite[] getVisibleAnimatedSprites() {
         return visibleAnimatedSpritesRef.get();
+    }
+
+    public long getIterationTime() {
+        return this.iterationTimeMillis;
     }
 }

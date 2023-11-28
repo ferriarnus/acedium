@@ -1,6 +1,5 @@
 package me.cortex.nvidium;
 
-import me.cortex.nvidium.api0.NvidiumAPI;
 import me.cortex.nvidium.gl.RenderDevice;
 import me.cortex.nvidium.managers.AsyncOcclusionTracker;
 import me.cortex.nvidium.managers.SectionManager;
@@ -12,17 +11,15 @@ import me.jellysquid.mods.sodium.client.render.chunk.RenderSection;
 import me.jellysquid.mods.sodium.client.render.chunk.compile.ChunkBuildOutput;
 import me.jellysquid.mods.sodium.client.render.chunk.vertex.format.impl.CompactChunkVertex;
 import me.jellysquid.mods.sodium.client.render.viewport.Viewport;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.texture.Sprite;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static org.lwjgl.opengl.GL11.glGetInteger;
+import static org.lwjgl.opengl.GL11.glNewList;
 import static org.lwjgl.opengl.NVXGPUMemoryInfo.GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX;
 
 public class NvidiumWorldRenderer {
@@ -44,24 +41,31 @@ public class NvidiumWorldRenderer {
     public NvidiumWorldRenderer(AsyncOcclusionTracker asyncChunkTracker) {
         int frames = SodiumClientMod.options().advanced.cpuRenderAheadLimit+1;
         //32 mb upload buffer
-        this.uploadStream = new UploadingBufferStream(device, frames, 32000000);
+        this.uploadStream = new UploadingBufferStream(device, 32000000);
         //8 mb download buffer
         this.downloadStream = new DownloadTaskStream(device, frames, 8000000);
 
         update_allowed_memory();
         //this.sectionManager = new SectionManager(device, max_geometry_memory*1024*1024, uploadStream, 150, 24, CompactChunkVertex.STRIDE);
-        this.sectionManager = new SectionManager(device, max_geometry_memory*1024*1024, uploadStream, CompactChunkVertex.STRIDE);
+        this.sectionManager = new SectionManager(device, max_geometry_memory*1024*1024, uploadStream, CompactChunkVertex.STRIDE, this);
         this.renderPipeline = new RenderPipeline(device, uploadStream, downloadStream, sectionManager);
 
 
         this.asyncChunkTracker = asyncChunkTracker;
     }
 
+    //TODO: cleanup this spagetti
+    public void enqueueRegionSort(int regionId) {
+        this.renderPipeline.enqueueRegionSort(regionId);
+    }
+
     public void delete() {
         uploadStream.delete();
         downloadStream.delete();
         renderPipeline.delete();
-        asyncChunkTracker.delete();
+        if (asyncChunkTracker != null) {
+            asyncChunkTracker.delete();
+        }
 
         sectionManager.destroy();
     }
@@ -101,6 +105,9 @@ public class NvidiumWorldRenderer {
         debugInfo.add("Terrain Memory MB: " + sectionManager.terrainAreana.getAllocatedMB()+(Nvidium.SUPPORTS_PERSISTENT_SPARSE_ADDRESSABLE_BUFFER?"":" (fallback mode)"));
         debugInfo.add(String.format("Fragmentation: %.2f", sectionManager.terrainAreana.getFragmentation()*100));
         debugInfo.add("Regions: " + sectionManager.getRegionManager().regionCount() + "/" + sectionManager.getRegionManager().maxRegions());
+        if (asyncChunkTracker != null) {
+            debugInfo.add("Async BFS iteration time: " + asyncChunkTracker.getIterationTime());
+        }
         renderPipeline.addDebugInfo(debugInfo);
     }
 
@@ -116,15 +123,25 @@ public class NvidiumWorldRenderer {
     }
 
     public void update(Camera camera, Viewport viewport, int frame, boolean spectator) {
-        asyncChunkTracker.update(viewport);
+        if (asyncChunkTracker != null) {
+            asyncChunkTracker.update(viewport, camera, spectator);
+        }
     }
 
     public int getAsyncFrameId() {
-        return asyncChunkTracker.getFrame();
+        if (asyncChunkTracker != null) {
+            return asyncChunkTracker.getFrame();
+        } else {
+            return -1;
+        }
     }
 
     public List<RenderSection> getSectionsWithEntities() {
-        return asyncChunkTracker.getLatestSectionsWithEntities();
+        if (asyncChunkTracker != null) {
+            return asyncChunkTracker.getLatestSectionsWithEntities();
+        } else {
+            return List.of();
+        }
     }
 
     public SectionManager getSectionManager() {
@@ -133,6 +150,10 @@ public class NvidiumWorldRenderer {
 
     @Nullable
     public Sprite[] getAnimatedSpriteSet() {
-        return asyncChunkTracker.getVisibleAnimatedSprites();
+        if (asyncChunkTracker != null) {
+            return asyncChunkTracker.getVisibleAnimatedSprites();
+        } else {
+            return new Sprite[0];
+        }
     }
 }

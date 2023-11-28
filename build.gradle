@@ -27,7 +27,7 @@ loom {
 
 processResources {
     inputs.property "version", project.version
-
+    archivesBaseName = "nvidium"
     filesMatching("META-INF/mods.toml") {
         expand "version": project.version
     }

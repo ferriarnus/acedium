@@ -9,11 +9,13 @@ import me.cortex.nvidium.util.IdProvider;
 import me.cortex.nvidium.util.UploadingBufferStream;
 import me.jellysquid.mods.sodium.client.render.viewport.Viewport;
 import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.util.math.Vec3d;
 import org.lwjgl.system.MemoryUtil;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.function.Consumer;
 
 //8x4x8
 public class RegionManager {
@@ -33,13 +35,16 @@ public class RegionManager {
 
     private final ArrayDeque<Region> dirtyRegions = new ArrayDeque<>();
 
-    public RegionManager(RenderDevice device, int maxRegions, int maxSections, UploadingBufferStream uploadStream) {
+    private final Consumer<Integer> regionUploadCallback;
+
+    public RegionManager(RenderDevice device, int maxRegions, int maxSections, UploadingBufferStream uploadStream, Consumer<Integer> regionUploaded) {
         this.regionMap.defaultReturnValue(-1);
         this.device = device;
         this.regionBuffer = device.createDeviceOnlyMappedBuffer((long) maxRegions * META_SIZE);
         this.sectionBuffer = device.createDeviceOnlyMappedBuffer((long) maxSections * SectionManager.SECTION_SIZE);
         this.uploadStream = uploadStream;
         this.regions = new Region[maxRegions];
+        this.regionUploadCallback = regionUploaded;
     }
 
     public void delete() {
@@ -62,18 +67,25 @@ public class RegionManager {
                 if (this.regions[region.id] == null) {
                     //There is no region that has replaced the old one at the id so we need to clear the region metadata
                     // to prevent the gpu from rendering arbitary data
-                    long regionUpload = this.uploadStream.getUpload(this.regionBuffer, (long) region.id * META_SIZE, META_SIZE);
+                    long regionUpload = this.uploadStream.upload(this.regionBuffer, (long) region.id * META_SIZE, META_SIZE);
                     MemoryUtil.memSet(regionUpload, -1, META_SIZE);
+
+                    long sectionUpload = this.uploadStream.upload(this.sectionBuffer,
+                            (long) region.id * TOTAL_SECTION_META_SIZE,
+                            TOTAL_SECTION_META_SIZE);
+                    MemoryUtil.memSet(sectionUpload, 0, TOTAL_SECTION_META_SIZE);
                 }
             } else {
                 //It is just a normal region update
-                long regionUpload = this.uploadStream.getUpload(this.regionBuffer, (long) region.id * META_SIZE, META_SIZE);
+                long regionUpload = this.uploadStream.upload(this.regionBuffer, (long) region.id * META_SIZE, META_SIZE);
                 this.setRegionMetadata(regionUpload, region);
 
-                long sectionUpload = this.uploadStream.getUpload(this.sectionBuffer,
+                long sectionUpload = this.uploadStream.upload(this.sectionBuffer,
                         (long) region.id * TOTAL_SECTION_META_SIZE,
                         TOTAL_SECTION_META_SIZE);
                 MemoryUtil.memCopy(region.sectionData, sectionUpload, TOTAL_SECTION_META_SIZE);
+
+                this.regionUploadCallback.accept(region.id);
             }
         }
     }
@@ -151,16 +163,17 @@ public class RegionManager {
         region.freeIndices.set(sectionId);
         region.id2pos[sectionId] = -1;
 
+        //Set the metadata of the section to empty
+        MemoryUtil.memSet(region.sectionData + sectionId * SectionManager.SECTION_SIZE, 0, SectionManager.SECTION_SIZE);
+
         if (region.count == 0) {
             //Remove the region and mark it as removed
             region.isRemoved = true;
+            region.delete();
             this.regions[region.id] = null;
             this.idProvider.release(region.id);
             this.regionMap.remove(region.key);
         }
-
-        //Set the metadata of the section to empty
-        MemoryUtil.memSet(region.sectionData + sectionId * SectionManager.SECTION_SIZE, 0, SectionManager.SECTION_SIZE);
 
         this.markDirty(region);
     }
@@ -235,9 +248,12 @@ public class RegionManager {
 
     public int distance(int regionId, int camChunkX, int camChunkY, int camChunkZ) {
         var region = this.regions[regionId];
-        return  Math.abs((region.rx<<3)+4-camChunkX)+
+        return  (Math.abs((region.rx<<3)+4-camChunkX)+
                 Math.abs((region.ry<<2)+2-camChunkY)+
-                Math.abs((region.rz<<3)+4-camChunkZ);
+                Math.abs((region.rz<<3)+4-camChunkZ)+
+                Math.abs((region.rx<<3)+3-camChunkX)+
+                Math.abs((region.ry<<2)+1-camChunkY)+
+                Math.abs((region.rz<<3)+3-camChunkZ))>>1;
     }
 
     public boolean withinSquare(int dist, int regionId, int camChunkX, int camChunkY, int camChunkZ) {
@@ -245,6 +261,15 @@ public class RegionManager {
         return  Math.abs((region.rx<<3)+4-camChunkX)<=dist &&
                 Math.abs((region.ry<<2)+2-camChunkY)<=dist &&
                 Math.abs((region.rz<<3)+4-camChunkZ)<=dist;
+    }
+
+    public boolean isRegionInACameraAxis(int regionId, double camX, double camY, double camZ) {
+        var region = this.regions[regionId];
+        //TODO: also account for region area instead of entire region
+        return (region.rx<<7 <= camX && camX <= ((region.rx+1)<<7))||
+               (region.ry<<6 <= camY && camY <= ((region.ry+1)<<6))||
+               (region.rz<<7 <= camZ && camZ <= ((region.rz+1)<<7))
+                ;
     }
 
     public long getRegionBufferAddress() {
@@ -261,6 +286,7 @@ public class RegionManager {
         }
         return this.regions[regionId].key;
     }
+
 
     private static class Region {
         private final int rx;

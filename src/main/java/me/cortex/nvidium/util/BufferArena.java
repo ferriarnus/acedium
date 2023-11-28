@@ -26,6 +26,8 @@ public class BufferArena {
         } else {
             buffer = device.createDeviceOnlyMappedBuffer(memory);
         }
+        //Reserve index 0
+        this.allocQuads(1);
     }
 
     public int allocQuads(int quadCount) {
@@ -46,7 +48,7 @@ public class BufferArena {
     }
 
     public long upload(UploadingBufferStream stream, int addr) {
-        return stream.getUpload(buffer, Integer.toUnsignedLong(addr)*4L*vertexFormatSize, (int) segments.getSize(addr)*4*vertexFormatSize);
+        return stream.upload(buffer, Integer.toUnsignedLong(addr)*4L*vertexFormatSize, (int) segments.getSize(addr)*4*vertexFormatSize);
     }
 
     public void delete() {
@@ -76,5 +78,9 @@ public class BufferArena {
     public float getFragmentation() {
         long expected = totalQuads * vertexFormatSize * 4;
         return (float) ((double)expected/getMemoryUsed());
+    }
+
+    public boolean canReuse(int addr, int quads) {
+        return this.segments.getSize(addr) == quads;
     }
 }

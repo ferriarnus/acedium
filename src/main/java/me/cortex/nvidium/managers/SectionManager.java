@@ -3,6 +3,7 @@ package me.cortex.nvidium.managers;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import me.cortex.nvidium.NvidiumWorldRenderer;
 import me.cortex.nvidium.gl.RenderDevice;
 import me.cortex.nvidium.sodiumCompat.IRepackagedResult;
 import me.cortex.nvidium.util.BufferArena;
@@ -30,14 +31,14 @@ public class SectionManager {
 
     private final LongSet hiddenSectionKeys = new LongOpenHashSet();
 
-    public SectionManager(RenderDevice device, long fallbackMemorySize, UploadingBufferStream uploadStream, int quadVertexSize) {
+    public SectionManager(RenderDevice device, long fallbackMemorySize, UploadingBufferStream uploadStream, int quadVertexSize, NvidiumWorldRenderer worldRenderer) {
         int maxRegions = 50_000;
 
         this.device = device;
         this.uploadStream = uploadStream;
 
         this.terrainAreana = new BufferArena(device, fallbackMemorySize, quadVertexSize);
-        this.regionManager = new RegionManager(device, maxRegions, maxRegions * 200, uploadStream);
+        this.regionManager = new RegionManager(device, maxRegions, maxRegions * 200, uploadStream, worldRenderer::enqueueRegionSort);
 
         this.section2id.defaultReturnValue(-1);
         this.section2terrain.defaultReturnValue(-1);
@@ -62,12 +63,17 @@ public class SectionManager {
 
         int terrainAddress;
         {
-            //If the section had terrain data associated with it, free it
-            if ((terrainAddress = this.section2terrain.remove(sectionKey)) != -1) {
+            //Attempt to reuse the same memory
+            terrainAddress = this.section2terrain.get(sectionKey);
+            if (terrainAddress != -1 && !this.terrainAreana.canReuse(terrainAddress, output.quads())) {
+                this.section2terrain.remove(sectionKey);
                 this.terrainAreana.free(terrainAddress);
+                terrainAddress = -1;
+            }
+            if (terrainAddress == -1) {
+                terrainAddress = this.terrainAreana.allocQuads(output.quads());
             }
 
-            terrainAddress = this.terrainAreana.allocQuads(output.quads());
             this.section2terrain.put(sectionKey, terrainAddress);
 
             long geometryUpload = terrainAreana.upload(uploadStream, terrainAddress);
@@ -81,8 +87,9 @@ public class SectionManager {
 
         //NOTE:TODO: The y encoded height position only has a range of like 6 bits max, that gives 18 bits free/spare for something
         // realistically it would only be 16 free bits cause ee but still thats 2 bytes free
+        //bits 18->26 taken by section id (used for translucency sorting/rendering)
         int px = section.getChunkX()<<8 | size.x<<4 | min.x;
-        int py = (section.getChunkY()&0x1FF)<<8 | size.y<<4 | min.y | (hideSectionBitSet?1<<17:0);
+        int py = (section.getChunkY()&0x1FF)<<8 | size.y<<4 | min.y | (hideSectionBitSet?1<<17:0) | ((sectionIdx&0xFF)<<18);
         int pz = section.getChunkZ()<<8 | size.z<<4 | min.z;
         int pw = terrainAddress;
         new Vector4i(px, py, pz, pw).getToAddress(metadata);

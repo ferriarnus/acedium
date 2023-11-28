@@ -2,9 +2,9 @@ package me.cortex.nvidium;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
-import it.unimi.dsi.fastutil.ints.IntSortedSet;
+import it.unimi.dsi.fastutil.ints.*;
 import me.cortex.nvidium.config.StatisticsLoggingLevel;
+import me.cortex.nvidium.config.TranslucencySortingLevel;
 import me.cortex.nvidium.gl.RenderDevice;
 import me.cortex.nvidium.gl.buffers.IDeviceMappedBuffer;
 import me.cortex.nvidium.managers.RegionVisibilityTracker;
@@ -54,16 +54,22 @@ public class RenderPipeline {
     private SectionRasterizer sectionRasterizer;
     private TemporalTerrainRasterizer temporalRasterizer;
     private TranslucentTerrainRasterizer translucencyTerrainRasterizer;
+    private SortRegionSectionPhase regionSectionSorter;
 
     private final IDeviceMappedBuffer sceneUniform;
-    private static final int SCENE_SIZE = (int) alignUp(4*4*4+4*4+4*4+4+4*4+4*4+8*7+3*4+3, 2);
+    private static final int SCENE_SIZE = (int) alignUp(4*4*4+4*4+4*4+4+4*4+4*4+8*7+3*4+3+4, 2);
 
     private final IDeviceMappedBuffer regionVisibility;
     private final IDeviceMappedBuffer sectionVisibility;
     private final IDeviceMappedBuffer terrainCommandBuffer;
+    private final IDeviceMappedBuffer translucencyCommandBuffer;
+    private final IDeviceMappedBuffer regionSortingList;
     private final IDeviceMappedBuffer statisticsBuffer;
 
     private final BitSet regionVisibilityTracker;
+
+    //Set of regions that need to be sorted
+    private final IntSet regionsToSort = new IntOpenHashSet();
 
     private static final class Statistics {
         public int frustumCount;
@@ -85,6 +91,7 @@ public class RenderPipeline {
         sectionRasterizer = new SectionRasterizer();
         temporalRasterizer = new TemporalTerrainRasterizer();
         translucencyTerrainRasterizer = new TranslucentTerrainRasterizer();
+        regionSectionSorter = new SortRegionSectionPhase();
 
         int maxRegions = sectionManager.getRegionManager().maxRegions();
 
@@ -92,6 +99,8 @@ public class RenderPipeline {
         regionVisibility = device.createDeviceOnlyMappedBuffer(maxRegions);
         sectionVisibility = device.createDeviceOnlyMappedBuffer(maxRegions * 256L);
         terrainCommandBuffer = device.createDeviceOnlyMappedBuffer(maxRegions*8L);
+        translucencyCommandBuffer = device.createDeviceOnlyMappedBuffer(maxRegions*8L);
+        regionSortingList = device.createDeviceOnlyMappedBuffer(maxRegions*2L);
 
         regionVisibilityTracker = new BitSet(maxRegions);
         regionVisibilityTracking = new RegionVisibilityTracker(downloadStream, maxRegions);
@@ -122,6 +131,7 @@ public class RenderPipeline {
         short[] regionMap;
         //Enqueue all the visible regions
         {
+
             //The region data indicies is located at the end of the sceneUniform
             IntSortedSet regions = new IntAVLTreeSet();
             for (int i = 0; i < rm.maxRegionIndex(); i++) {
@@ -134,9 +144,16 @@ public class RenderPipeline {
 
 
                 if (rm.isRegionVisible(frustum, i)) {
-                    regions.add((rm.distance(i, chunkPos.x, chunkPos.y, chunkPos.z)<<16)|i);
+                    //Note, its sorted like this because of overdraw, also the translucency command buffer is written to
+                    // in a reverse order to this in the section_raster/task.glsl shader
+                    regions.add(((rm.distance(i, chunkPos.x, chunkPos.y, chunkPos.z))<<16)|i);
                     visibleRegions++;
                     regionVisibilityTracker.set(i);
+
+                    if (rm.isRegionInACameraAxis(i, px, py, pz)) {
+                        regionsToSort.add(i);
+                    }
+
                 } else {
                     if (regionVisibilityTracker.get(i)) {//Going from visible to non visible
                         //Clear the visibility bits
@@ -148,9 +165,10 @@ public class RenderPipeline {
                 }
 
             }
+
             regionMap = new short[regions.size()];
             if (visibleRegions == 0) return;
-            long addr = uploadStream.getUpload(sceneUniform, SCENE_SIZE, visibleRegions*2);
+            long addr = uploadStream.upload(sceneUniform, SCENE_SIZE, visibleRegions*2);
             queryAddr = addr;//This is ungodly hacky
             int j = 0;
             for (int i : regions) {
@@ -168,7 +186,7 @@ public class RenderPipeline {
             //TODO: maybe segment the uniform buffer into 2 parts, always updating and static where static holds pointers
             Vector3f delta = new Vector3f((float) (px-(chunkPos.x<<4)), (float) (py-(chunkPos.y<<4)), (float) (pz-(chunkPos.z<<4)));
             delta.negate();
-            long addr = uploadStream.getUpload(sceneUniform, 0, SCENE_SIZE);
+            long addr = uploadStream.upload(sceneUniform, 0, SCENE_SIZE);
             var mvp =new Matrix4f(crm.projection())
                     .mul(crm.modelView())
                     .translate(delta)//Translate the subchunk position
@@ -192,6 +210,10 @@ public class RenderPipeline {
             addr += 8;
             MemoryUtil.memPutLong(addr, terrainCommandBuffer.getDeviceAddress());
             addr += 8;
+            MemoryUtil.memPutLong(addr, translucencyCommandBuffer.getDeviceAddress());
+            addr += 8;
+            MemoryUtil.memPutLong(addr, regionSortingList.getDeviceAddress());
+            addr += 8;
             MemoryUtil.memPutLong(addr, sectionManager.terrainAreana.buffer.getDeviceAddress());
             addr += 8;
             MemoryUtil.memPutLong(addr, statisticsBuffer == null?0:statisticsBuffer.getDeviceAddress());//Logging buffer
@@ -207,10 +229,24 @@ public class RenderPipeline {
             MemoryUtil.memPutByte(addr, (byte) (frameId++));
         }
 
+        if (Nvidium.config.translucency_sorting_level == TranslucencySortingLevel.NONE) {
+            regionsToSort.clear();
+        }
+
+        int regionSortSize = this.regionsToSort.size();
+
+        if (regionSortSize != 0){
+            long regionSortUpload = uploadStream.upload(regionSortingList, 0, regionSortSize * 2);
+            for (int region : regionsToSort) {
+                MemoryUtil.memPutShort(regionSortUpload, (short) region);
+                regionSortUpload += 2;
+            }
+            regionsToSort.clear();
+        }
+
         sectionManager.commitChanges();//Commit all uploads done to the terrain and meta data
         uploadStream.commit();
 
-        //TODO: FIXME: THIS FEELS ILLEGAL
         TickableManager.TickAll();
 
         if ((err = glGetError()) != 0) {
@@ -282,6 +318,12 @@ public class RenderPipeline {
 
 
 
+        if (regionSortSize != 0) {
+            glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+            regionSectionSorter.dispatch(regionSortSize);
+            glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        }
+
         glDisableClientState(GL_UNIFORM_BUFFER_UNIFIED_NV);
         glDisableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
         glDisableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
@@ -295,12 +337,16 @@ public class RenderPipeline {
         }
 
         if (Nvidium.config.statistics_level.ordinal() > StatisticsLoggingLevel.FRUSTUM.ordinal()) {
-            glMemoryBarrier(GL_ALL_BARRIER_BITS);
+            //glMemoryBarrier(GL_ALL_BARRIER_BITS);
             //Stupid bloody nvidia not following spec forcing me to use a upload stream
-            long upload = this.uploadStream.getUpload(statisticsBuffer, 0, 4*4);
+            long upload = this.uploadStream.upload(statisticsBuffer, 0, 4*4);
             MemoryUtil.memSet(upload, 0, 4*4);
             //glClearNamedBufferSubData(statisticsBuffer.getId(), GL_R32UI, 0, 4 * 4, GL_RED_INTEGER, GL_UNSIGNED_INT, new int[]{0});
         }
+    }
+
+    void enqueueRegionSort(int regionId) {
+        this.regionsToSort.add(regionId);
     }
 
     //TODO: refactor to different location
@@ -322,7 +368,6 @@ public class RenderPipeline {
     //Translucency is rendered in a very cursed and incorrect way
     // it hijacks the unassigned indirect command dispatch and uses that to dispatch the translucent chunks as well
     public void renderTranslucent() {
-
         glEnableClientState(GL_UNIFORM_BUFFER_UNIFIED_NV);
         glEnableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
         glEnableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
@@ -335,7 +380,7 @@ public class RenderPipeline {
             glEnable(GL_DEPTH_TEST);
             RenderSystem.enableBlend();
             RenderSystem.blendFuncSeparate(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
-            translucencyTerrainRasterizer.raster(prevRegionCount, terrainCommandBuffer.getDeviceAddress());
+            translucencyTerrainRasterizer.raster(prevRegionCount, translucencyCommandBuffer.getDeviceAddress());
             RenderSystem.disableBlend();
             RenderSystem.defaultBlendFunc();
             glDisable(GL_DEPTH_TEST);
@@ -354,12 +399,15 @@ public class RenderPipeline {
         regionVisibility.delete();
         sectionVisibility.delete();
         terrainCommandBuffer.delete();
+        translucencyCommandBuffer.delete();
+        regionSortingList.delete();
 
         terrainRasterizer.delete();
         regionRasterizer.delete();
         sectionRasterizer.delete();
         temporalRasterizer.delete();
         translucencyTerrainRasterizer.delete();
+        regionSectionSorter.delete();
 
         if (statisticsBuffer != null) {
             statisticsBuffer.delete();
@@ -392,11 +440,13 @@ public class RenderPipeline {
         sectionRasterizer.delete();
         temporalRasterizer.delete();
         translucencyTerrainRasterizer.delete();
+        regionSectionSorter.delete();
 
         terrainRasterizer = new PrimaryTerrainRasterizer();
         regionRasterizer = new RegionRasterizer();
         sectionRasterizer = new SectionRasterizer();
         temporalRasterizer = new TemporalTerrainRasterizer();
         translucencyTerrainRasterizer = new TranslucentTerrainRasterizer();
+        regionSectionSorter = new SortRegionSectionPhase();
     }
 }
