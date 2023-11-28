@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT, modid = Nvidium.MOD_ID)
 @Mod(Nvidium.MOD_ID)
 public class Nvidium {
-    public static final String MOD_ID = "nvidium";
+    public static final String MOD_ID = "superbium";
     public static String MOD_VERSION;
-    public static final Logger LOGGER = LoggerFactory.getLogger("Nvidium");
+    public static final Logger LOGGER = LoggerFactory.getLogger("Superbium");
     public static boolean IS_COMPATIBLE = false;
     public static boolean IS_ENABLED = false;
     public static boolean IS_DEBUG = System.getProperty("nvidium.isDebug", "false").equals("TRUE");

@@ -2,11 +2,12 @@ modLoader="javafml"
 loaderVersion="[47,)"
 license="LGPL-3.0"
 [[mods]]
-modId="nvidium"
+modId="superbium"
 version="${version}"
-displayName="nvidium"
-logoFile="assets/nvidium/nvidium.png"
-authors="Cortex"
+displayName="superbium"
+#logoFile="assets/nvidium/nvidium.png"
+authors="Cortex, Ferri_Arnus"
 description='''
+Experimental port of nvidium, bugs will be present
 Replacement rendering engine for sodium/embeddium
 '''
