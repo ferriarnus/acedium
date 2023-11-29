@@ -2,11 +2,43 @@ modLoader="javafml"
 loaderVersion="[47,)"
 license="LGPL-3.0"
 [[mods]]
-modId="superbium"
+modId="acedium"
 version="${version}"
-displayName="superbium"
+displayName="Acedium"
 #logoFile="assets/nvidium/nvidium.png"
 authors="Cortex, Ferri_Arnus"
+description='''
+Experimental port of nvidium, bugs will be present
+Replacement rendering engine for sodium/embeddium
+'''
+
+[[dependencies.acedium]]
+modId = "forge"
+mandatory = true
+versionRange = "[46,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.acedium]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.20,1.20.1]"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.acedium]]
+modId = "embeddium"
+mandatory = true
+versionRange = "[0.2.2+mc1.20.1, )"
+ordering = "NONE"
+side = "CLIENT"
+
+[[mods]]
+modId="nvidium"
+displayName="Nvidium (Acedium)"
+version="${version}"
+authors="Cortex"
+logoFile="assets/nvidium/nvidium.png"
 description='''
 Experimental port of nvidium, bugs will be present
 Replacement rendering engine for sodium/embeddium
