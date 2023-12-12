@@ -1,7 +1,7 @@
 package me.cortex.nvidium.sodiumCompat;
 
 import net.irisshaders.iris.api.v0.IrisApi;
-import net.minecraftforge.fml.loading.FMLLoader;
+import net.neoforged.fml.loading.FMLLoader;
 
 public class IrisCheck {
     public static final boolean IRIS_LOADED = FMLLoader.getLoadingModList().getModFileById("oculus") != null;

@@ -1,5 +1,5 @@
 plugins {
-    id 'dev.architectury.loom' version '1.2.348'
+    id 'dev.architectury.loom' version '1.4-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -10,7 +10,6 @@ sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
 loom {
-    mixin.defaultRefmapName = "nvidium.refmap.json"
     runs {
         it.configureEach {
             vmArgs("-Xmx8G", "-XX:+UseZGC")
@@ -18,11 +17,6 @@ loom {
     }
 
     silentMojangMappingsLicense()
-    forge {
-        mixinConfigs = [
-                "nvidium.mixins.json"
-        ]
-    }
 }
 
 processResources {
@@ -41,23 +35,29 @@ repositories {
             includeGroup "maven.modrinth"
         }
     }
+    maven { url "https://maven.neoforged.net" }
 }
 
 dependencies {
+
+    mappings loom.layered() {
+        it.mappings("net.fabricmc:yarn:${project.yarn_mappings}:v2")
+        it.mappings file("mappings/yarnpatch.tiny")
+    }
     // To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    forge "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
+    //mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    neoForge "net.neoforged:neoforge:${project.neoforge_version}"
 
-    modImplementation "maven.modrinth:embeddium:0.2.10+mc1.20.1"
+    modImplementation "maven.modrinth:embeddium:0.2.13+mc1.20.4"
     modCompileOnly "maven.modrinth:oculus:1.20.1-1.6.9"
     // Fabric API
-    modImplementation(fabricApi.module("fabric-api-base", project.fabric_version))
-    modImplementation(fabricApi.module("fabric-block-view-api-v2", project.fabric_version))
-    modImplementation(fabricApi.module("fabric-rendering-fluids-v1", project.fabric_version))
+    //modImplementation(fabricApi.module("fabric-api-base", project.fabric_version))
+    //modImplementation(fabricApi.module("fabric-block-view-api-v2", project.fabric_version))
+    //modImplementation(fabricApi.module("fabric-rendering-fluids-v1", project.fabric_version))
 
-    modImplementation("net.fabricmc.fabric-api:fabric-rendering-data-attachment-v1:0.3.40+73761d2e3b")
-    modImplementation(fabricApi.module("fabric-resource-loader-v0", project.fabric_version))
+    //modImplementation("net.fabricmc.fabric-api:fabric-rendering-data-attachment-v1:0.3.40+73761d2e3b")
+    //modImplementation(fabricApi.module("fabric-resource-loader-v0", project.fabric_version))
 
 
     //modImplementation "maven.modrinth:c2me-fabric:0.2.0+alpha.10.49+1.19.4"
