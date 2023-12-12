@@ -23,7 +23,7 @@ import java.util.*;
 public class MixinSodiumOptionsGUI {
     @Shadow @Final private List<OptionPage> pages;
 
-    @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Ljava/util/List;add(Ljava/lang/Object;)Z", ordinal = 3, shift = At.Shift.AFTER))
+    @Inject(method = "<init>", at = @At("RETURN"))
     private void addNvidiumOptions(Screen prevScreen, CallbackInfo ci) {
         ConfigGuiBuilder.addNvidiumGui(pages);
     }
