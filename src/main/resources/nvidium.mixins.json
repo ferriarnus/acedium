@@ -23,7 +23,6 @@
     "sodium.SodiumWorldRendererAccessor",
     "sodium.CompactChunkVertexAccessor",
 
-    "sodium.MixinShaderLoader",
     "sodium.MixinEmbeddiumGameOptionPages"
   ],
   "injectors": {

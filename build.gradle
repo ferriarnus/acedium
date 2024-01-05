@@ -49,7 +49,7 @@ dependencies {
     //mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     neoForge "net.neoforged:neoforge:${project.neoforge_version}"
 
-    modImplementation "maven.modrinth:embeddium:0.2.13+mc1.20.4"
+    modImplementation "maven.modrinth:embeddium:0.2.15+mc1.20.4"
     modCompileOnly "maven.modrinth:oculus:1.20.1-1.6.9"
     // Fabric API
     //modImplementation(fabricApi.module("fabric-api-base", project.fabric_version))
