@@ -38,7 +38,10 @@ void main() {
     //Compute indirection for translucency sorting
     {
         ivec4 header = sectionData[sectionId].header;
-
+        //If the section is empty, we dont care about it at all, so ignore it and return
+        if (sectionEmpty(header)) {
+            return;
+        }
         //Compute the redirected section index
         sectionId &= ~0xFF;
         sectionId |= uint((header.y>>18)&0xFF);
@@ -62,11 +65,13 @@ void main() {
 
 
     quadCount = ((sectionData[sectionId].renderRanges.w>>16)&0xFFFF);
-    originAndBaseData.w = uintBitsToFloat(baseDataOffset);
     #ifdef TRANSLUCENCY_SORTING_QUADS
     jiggle = uint8_t(min(quadCount>>1,(uint(frameId)&1)));//Jiggle by 1 quads (either 0 or 1)//*15
     //jiggle = uint8_t(0);
     quadCount += jiggle;
+    originAndBaseData.w = uintBitsToFloat(baseDataOffset - uint(jiggle));
+    #else
+    originAndBaseData.w = uintBitsToFloat(baseDataOffset);
     #endif
 
     //Emit enough mesh shaders such that max(gl_GlobalInvocationID.x)>=quadCount
@@ -74,5 +79,9 @@ void main() {
 
     #ifdef STATISTICS_QUADS
     atomicAdd(statistics_buffer+2, quadCount);
+    #endif
+
+    #ifdef STATISTICS_SECTIONS
+    atomicAdd(statistics_buffer+1, 1);
     #endif
 }
