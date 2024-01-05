@@ -20,9 +20,12 @@
     "sodium.MixinSodiumOptionsGUI",
     "sodium.MixinSodiumWorldRenderer",
     "sodium.MixinViewport",
-    "sodium.MixinShaderLoader",
     "sodium.SodiumWorldRendererAccessor",
+    "sodium.CompactChunkVertexAccessor",
+
+    "sodium.MixinShaderLoader",
     "sodium.MixinEmbeddiumGameOptionPages"
+
   ],
   "injectors": {
     "defaultRequire": 1
