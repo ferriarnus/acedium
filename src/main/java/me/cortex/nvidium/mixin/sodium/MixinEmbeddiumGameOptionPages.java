@@ -16,7 +16,8 @@ public class MixinEmbeddiumGameOptionPages {
             ordinal = 2), method = "advanced", remap = false)
     private static OptionImpl faceculling(OptionImpl.Builder builder) {
         builder.setEnabled(!Nvidium.IS_ENABLED);
-        SodiumClientMod.options().performance.useTranslucentFaceSorting = false;
+        if (Nvidium.IS_ENABLED)
+            SodiumClientMod.options().performance.useTranslucentFaceSorting = false;
         return builder.build();
     }
 }
