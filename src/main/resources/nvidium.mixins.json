@@ -21,7 +21,6 @@
     "sodium.MixinSodiumWorldRenderer",
     "sodium.SodiumWorldRendererAccessor",
     "sodium.MixinEmbeddiumGameOptionPages"
-
   ],
   "injectors": {
     "defaultRequire": 1
