@@ -49,8 +49,8 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     forge "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
 
-    modImplementation "maven.modrinth:embeddium:0.2.16+mc1.20.1"
-    modCompileOnly "maven.modrinth:oculus:1.20.1-1.6.9"
+    modImplementation "maven.modrinth:embeddium:0.3.9+mc1.20.1"
+    modCompileOnly "maven.modrinth:oculus:1.20.1-1.6.15a"
 
     //modImplementation "maven.modrinth:c2me-fabric:0.2.0+alpha.10.49+1.19.4"
     //modImplementation "maven.modrinth:chunks-fade-in:v1.0.3-1.19.4"
