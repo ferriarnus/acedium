@@ -29,7 +29,7 @@ side = "BOTH"
 [[dependencies.acedium]]
 modId = "embeddium"
 mandatory = true
-versionRange = "[0.2.2+mc1.20.1, )"
+versionRange = "[0.3.9+mc1.20.1, )"
 ordering = "NONE"
 side = "CLIENT"
 
