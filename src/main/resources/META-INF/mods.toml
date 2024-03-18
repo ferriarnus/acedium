@@ -5,6 +5,7 @@ license="LGPL-3.0"
 modId="acedium"
 version="${version}"
 displayName="Acedium"
+displayTest = "IGNORE_SERVER_VERSION"
 #logoFile="assets/nvidium/nvidium.png"
 authors="Cortex, Ferri_Arnus"
 description='''
