@@ -51,12 +51,12 @@ dependencies {
 
 
     // Fabric API
-    modImplementation(fabricApi.module("fabric-api-base", project.fabric_version))
-    modImplementation(fabricApi.module("fabric-block-view-api-v2", project.fabric_version))
-    modImplementation(fabricApi.module("fabric-rendering-fluids-v1", project.fabric_version))
+    //modImplementation(fabricApi.module("fabric-api-base", project.fabric_version))
+    //modImplementation(fabricApi.module("fabric-block-view-api-v2", project.fabric_version))
+    //modImplementation(fabricApi.module("fabric-rendering-fluids-v1", project.fabric_version))
 
-    modImplementation("net.fabricmc.fabric-api:fabric-rendering-data-attachment-v1:0.3.40+73761d2e3b")
-    modImplementation(fabricApi.module("fabric-resource-loader-v0", project.fabric_version))
+    //modImplementation("net.fabricmc.fabric-api:fabric-rendering-data-attachment-v1:0.3.40+73761d2e3b")
+    //modImplementation(fabricApi.module("fabric-resource-loader-v0", project.fabric_version))
 
     modImplementation "maven.modrinth:embeddium:0.3.9+mc1.20.1"
     modCompileOnly "maven.modrinth:oculus:1.20.1-1.6.15a"
