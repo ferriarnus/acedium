@@ -1,13 +1,13 @@
 plugins {
-    id 'dev.architectury.loom' version '1.4-SNAPSHOT'
+    id 'dev.architectury.loom'  version '1.6-SNAPSHOT'
     id 'maven-publish'
 }
 
 version = project.mod_version
 group = project.maven_group
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21
 
 loom {
     runs {
@@ -42,7 +42,7 @@ dependencies {
 
     mappings loom.layered() {
         it.mappings("net.fabricmc:yarn:${project.yarn_mappings}:v2")
-        it.mappings file("mappings/yarnpatch.tiny")
+        it.mappings("dev.architectury:yarn-mappings-patch-neoforge:1.20.5+build.3")
     }
     // To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -59,10 +59,11 @@ dependencies {
     //modImplementation("net.fabricmc.fabric-api:fabric-rendering-data-attachment-v1:0.3.40+73761d2e3b")
     //modImplementation(fabricApi.module("fabric-resource-loader-v0", project.fabric_version))
 
+    //modImplementation "maven.modrinth:sodium:mc1.20.5-0.5.8"
 
     //modImplementation "maven.modrinth:c2me-fabric:0.2.0+alpha.10.49+1.19.4"
     //modImplementation "maven.modrinth:chunks-fade-in:v1.0.3-1.19.4"
     //modImplementation "maven.modrinth:immersiveportals:v2.7.3-mc1.19.4"
-    //modCompileOnly "maven.modrinth:iris:1.6.9+1.20.2"
+    //modCompileOnly "maven.modrinth:iris:1.7.0+1.20.5"
 }
 
