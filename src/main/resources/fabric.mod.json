@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "nvidium",
+  "version": "${version}",
+  "name": "Nvidium",
+  "description": "Replacement rendering engine for sodium",
+  "authors": [
+    "Cortex"
+  ],
+  "contact": {},
+  "license": "LGPL-3.0",
+  "icon": "assets/nvidium/nvidium.png",
+  "environment": "client",
+  "entrypoints": {},
+  "mixins": [
+    "nvidium.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15",
+    "minecraft": ">=1.20.6",
+    "sodium": ["=0.5.8"]
+  }
+}
