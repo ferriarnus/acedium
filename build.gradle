@@ -22,7 +22,7 @@ loom {
 processResources {
     inputs.property "version", project.version
     archivesBaseName = "acedium"
-    filesMatching("META-INF/mods.toml") {
+    filesMatching("META-INF/neoforge.mods.toml") {
         expand "version": project.version
     }
 }
@@ -49,8 +49,8 @@ dependencies {
     //mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     neoForge "net.neoforged:neoforge:${project.neoforge_version}"
 
-    modImplementation "maven.modrinth:embeddium:0.3.9+mc1.20.4"
-    modCompileOnly "maven.modrinth:oculus:1.20.1-1.6.9"
+    modImplementation "maven.modrinth:embeddium:0.3.18+mc1.20.6"
+    //modCompileOnly "maven.modrinth:oculus:1.20.1-1.6.9"
     // Fabric API
     //modImplementation(fabricApi.module("fabric-api-base", project.fabric_version))
     //modImplementation(fabricApi.module("fabric-block-view-api-v2", project.fabric_version))
@@ -64,6 +64,6 @@ dependencies {
     //modImplementation "maven.modrinth:c2me-fabric:0.2.0+alpha.10.49+1.19.4"
     //modImplementation "maven.modrinth:chunks-fade-in:v1.0.3-1.19.4"
     //modImplementation "maven.modrinth:immersiveportals:v2.7.3-mc1.19.4"
-    //modCompileOnly "maven.modrinth:iris:1.7.0+1.20.6"
+    modCompileOnly "maven.modrinth:iris:1.7.0+1.20.6"
 }
 

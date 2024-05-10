@@ -16,14 +16,14 @@ Replacement rendering engine for sodium/embeddium
 [[dependencies.acedium]]
 modId = "neoforge"
 type="required"
-versionRange = "[20.4.40-beta,)"
+versionRange = "[20.6.51-beta,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.acedium]]
 modId = "minecraft"
 type="required"
-versionRange = "[1.20.4,1.20.5)"
+versionRange = "[1.20.5,1.21)"
 ordering = "NONE"
 side = "BOTH"
 

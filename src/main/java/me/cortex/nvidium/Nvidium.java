@@ -4,8 +4,7 @@ import me.cortex.nvidium.config.NvidiumConfig;
 import net.minecraft.util.Util;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.IExtensionPoint;
-import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLConstructModEvent;
 import net.neoforged.fml.loading.FMLLoader;
@@ -15,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 
 //NOTE: with sodium async bfs, just reimplement the bfs dont try to convert sodiums bfs into async
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT, modid = Nvidium.MOD_ID)
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT, modid = Nvidium.MOD_ID)
 @Mod(Nvidium.MOD_ID)
 public class Nvidium {
     public static final String MOD_ID = "acedium";
