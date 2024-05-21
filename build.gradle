@@ -6,8 +6,8 @@ plugins {
 version = project.mod_version
 group = project.maven_group
 
-sourceCompatibility = JavaVersion.VERSION_21
-targetCompatibility = JavaVersion.VERSION_21
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 loom {
     mixin.defaultRefmapName = "nvidium.refmap.json"
