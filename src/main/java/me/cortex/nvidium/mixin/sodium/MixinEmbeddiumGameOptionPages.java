@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class MixinEmbeddiumGameOptionPages {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/gui/options/OptionImpl$Builder;build()Lme/jellysquid/mods/sodium/client/gui/options/OptionImpl;",
-            ordinal = 2), method = "advanced", remap = false)
+            ordinal = 11), method = "quality", remap = false)
     private static OptionImpl faceculling(OptionImpl.Builder builder) {
         builder.setEnabled(!Nvidium.IS_ENABLED);
         if (Nvidium.IS_ENABLED)

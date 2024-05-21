@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.6-SNAPSHOT'
+    id 'dev.architectury.loom' version '1.6-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -58,8 +58,8 @@ dependencies {
     //modImplementation("net.fabricmc.fabric-api:fabric-rendering-data-attachment-v1:0.3.40+73761d2e3b")
     //modImplementation(fabricApi.module("fabric-resource-loader-v0", project.fabric_version))
 
-    modImplementation "maven.modrinth:embeddium:0.3.9+mc1.20.1"
-    modImplementation "maven.modrinth:sodium:mc1.20.6-0.5.8"
+    modImplementation "maven.modrinth:embeddium:0.3.19+mc1.20.1"
+    //modImplementation "maven.modrinth:sodium:mc1.20.6-0.5.8"
 
 
     //modImplementation "maven.modrinth:c2me-fabric:0.2.0+alpha.10.49+1.19.4"
