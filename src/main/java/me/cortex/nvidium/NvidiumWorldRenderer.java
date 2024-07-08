@@ -105,15 +105,18 @@ public class NvidiumWorldRenderer {
 
     public void addDebugInfo(ArrayList<String> debugInfo) {
         debugInfo.add("Using nvidium renderer: "+ Nvidium.MOD_VERSION);
+        /*
         debugInfo.add("Memory limit: " + max_geometry_memory + " mb");
-        debugInfo.add("Terrain Memory MB: " + sectionManager.terrainAreana.getAllocatedMB()+(Nvidium.SUPPORTS_PERSISTENT_SPARSE_ADDRESSABLE_BUFFER?"":" (fallback mode)"));
+        debugInfo.add("Terrain Memory MB: " +);
         debugInfo.add(String.format("Fragmentation: %.2f", sectionManager.terrainAreana.getFragmentation()*100));
         debugInfo.add("Regions: " + sectionManager.getRegionManager().regionCount() + "/" + sectionManager.getRegionManager().maxRegions());
-        if (asyncChunkTracker != null) {
-            debugInfo.add("Async BFS iteration time: " + asyncChunkTracker.getIterationTime());
-            debugInfo.add("Build queue sizes: " + Arrays.toString(this.asyncChunkTracker.getBuildQueueSizes()));
+         */
+        debugInfo.add("Mem" + (Nvidium.SUPPORTS_PERSISTENT_SPARSE_ADDRESSABLE_BUFFER?"":" (fallback)") + ": " + this.sectionManager.terrainAreana.getAllocatedMB() + "/"+ this.max_geometry_memory + String.format(", F: %.2f", sectionManager.terrainAreana.getFragmentation()*100));
+        debugInfo.add("Regions: " + sectionManager.getRegionManager().regionCount() + "/" + sectionManager.getRegionManager().maxRegions());
+        if (this.asyncChunkTracker != null) {
+            debugInfo.add("A-BFS: " + asyncChunkTracker.getIterationTime() + " Q: " + Arrays.toString(this.asyncChunkTracker.getBuildQueueSizes()));//Async BFS iteration time:, Build queue sizes:
         }
-        renderPipeline.addDebugInfo(debugInfo);
+        this.renderPipeline.addDebugInfo(debugInfo);
     }
 
 
@@ -164,5 +167,9 @@ public class NvidiumWorldRenderer {
 
     public void setTransformation(int id, Matrix4fc transform) {
         this.renderPipeline.setTransformation(id, transform);
+    }
+
+    public void setOrigin(int id, int x, int y, int z) {
+        this.renderPipeline.setOrigin(id, x, y, z);
     }
 }

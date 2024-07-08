@@ -71,13 +71,4 @@ public class Nvidium {
         }
         IS_ENABLED = IS_COMPATIBLE;
     }
-
-
-    public static void setupGLDebugCallback() {
-
-    }
-
-    public static void preWindowInit() {
-
-    }
 }
