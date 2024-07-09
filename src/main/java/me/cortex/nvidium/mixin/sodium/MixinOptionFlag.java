@@ -1,8 +1,8 @@
 package me.cortex.nvidium.mixin.sodium;
 
 import me.cortex.nvidium.sodiumCompat.NvidiumOptionFlags;
-import me.jellysquid.mods.sodium.client.gui.options.OptionFlag;
 import org.apache.commons.lang3.ArrayUtils;
+import org.embeddedt.embeddium.api.options.structure.OptionFlag;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;

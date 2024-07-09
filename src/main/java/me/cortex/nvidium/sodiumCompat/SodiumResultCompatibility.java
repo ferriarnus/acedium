@@ -1,15 +1,10 @@
 package me.cortex.nvidium.sodiumCompat;
 
-import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.longs.LongArrays;
-import me.cortex.nvidium.Nvidium;
-import me.jellysquid.mods.sodium.client.model.quad.properties.ModelQuadFacing;
-import me.jellysquid.mods.sodium.client.render.chunk.compile.ChunkBuildOutput;
-import me.jellysquid.mods.sodium.client.render.chunk.terrain.DefaultTerrainRenderPasses;
-import me.jellysquid.mods.sodium.client.util.NativeBuffer;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.math.Vec3d;
-import org.joml.Vector3f;
+import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
+import org.embeddedt.embeddium.impl.render.chunk.terrain.DefaultTerrainRenderPasses;
+import org.embeddedt.embeddium.impl.util.NativeBuffer;
 import org.joml.Vector3i;
 import org.lwjgl.system.MemoryUtil;
 

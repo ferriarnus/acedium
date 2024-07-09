@@ -28,11 +28,11 @@ ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.acedium]]
-modId = "embeddium"
+modId="embeddium"
 type="required"
-versionRange = "[0.2.2+mc1.20.4, )"
-ordering = "NONE"
-side = "CLIENT"
+versionRange="[1.0.0-beta.1+mc1.21]"
+ordering="NONE"
+side="CLIENT"
 
 [[mixins]]
 config = "nvidium.mixins.json"

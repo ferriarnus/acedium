@@ -1,9 +1,8 @@
 package me.cortex.nvidium.mixin.sodium;
 
 import me.cortex.nvidium.Nvidium;
-import me.jellysquid.mods.sodium.client.SodiumClientMod;
-import me.jellysquid.mods.sodium.client.gui.SodiumGameOptionPages;
-import me.jellysquid.mods.sodium.client.gui.options.OptionImpl;
+import org.embeddedt.embeddium.api.options.structure.OptionImpl;
+import org.embeddedt.embeddium.impl.Embeddium;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -16,7 +15,7 @@ public class MixinEmbeddiumGameOptionPages {
     private static OptionImpl faceculling(OptionImpl.Builder builder) {
         builder.setEnabled(!Nvidium.IS_ENABLED);
         if (Nvidium.IS_ENABLED)
-            SodiumClientMod.options().performance.useTranslucentFaceSorting = false;
+            Embeddium.options().performance.useTranslucentFaceSorting = false;
         return builder.build();
     }
 }

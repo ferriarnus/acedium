@@ -2,7 +2,7 @@ package me.cortex.nvidium.api0;
 
 import me.cortex.nvidium.Nvidium;
 import me.cortex.nvidium.sodiumCompat.INvidiumWorldRendererGetter;
-import me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer;
+import org.embeddedt.embeddium.impl.render.EmbeddiumWorldRenderer;
 import org.joml.Matrix4fc;
 import org.joml.Matrix4x3fc;
 
@@ -20,7 +20,7 @@ public class NvidiumAPI {
      */
     public void hideSection(int x, int y, int z) {
         if (Nvidium.IS_ENABLED) {
-            var renderer = ((INvidiumWorldRendererGetter) SodiumWorldRenderer.instance()).getRenderer();
+            var renderer = ((INvidiumWorldRendererGetter) EmbeddiumWorldRenderer.instance()).getRenderer();
             if (renderer != null) {
                 renderer.getSectionManager().setHideBit(x, y, z, true);
             }
@@ -35,7 +35,7 @@ public class NvidiumAPI {
      */
     public void showSection(int x, int y, int z) {
         if (Nvidium.IS_ENABLED) {
-            var renderer = ((INvidiumWorldRendererGetter) SodiumWorldRenderer.instance()).getRenderer();
+            var renderer = ((INvidiumWorldRendererGetter) EmbeddiumWorldRenderer.instance()).getRenderer();
             if (renderer != null) {
                 renderer.getSectionManager().setHideBit(x, y, z, false);
             }
@@ -51,7 +51,7 @@ public class NvidiumAPI {
      */
     public void setRegionTransformId(int id, int x, int y, int z) {
         if (Nvidium.IS_ENABLED) {
-            var renderer = ((INvidiumWorldRendererGetter) SodiumWorldRenderer.instance()).getRenderer();
+            var renderer = ((INvidiumWorldRendererGetter) EmbeddiumWorldRenderer.instance()).getRenderer();
             if (renderer != null) {
                 renderer.getSectionManager().getRegionManager().setRegionTransformId(x, y, z, id);
             }
@@ -65,7 +65,7 @@ public class NvidiumAPI {
      */
     public void setTransformation(int id, Matrix4fc transform) {
         if (Nvidium.IS_ENABLED) {
-            var renderer = ((INvidiumWorldRendererGetter) SodiumWorldRenderer.instance()).getRenderer();
+            var renderer = ((INvidiumWorldRendererGetter) EmbeddiumWorldRenderer.instance()).getRenderer();
             if (renderer != null) {
                 renderer.setTransformation(id, transform);
             }
@@ -81,7 +81,7 @@ public class NvidiumAPI {
      */
     public void setOrigin(int id, int x, int y, int z) {
         if (Nvidium.IS_ENABLED) {
-            var renderer = ((INvidiumWorldRendererGetter) SodiumWorldRenderer.instance()).getRenderer();
+            var renderer = ((INvidiumWorldRendererGetter) EmbeddiumWorldRenderer.instance()).getRenderer();
             if (renderer != null) {
                 renderer.setOrigin(id, x, y, z);
             }

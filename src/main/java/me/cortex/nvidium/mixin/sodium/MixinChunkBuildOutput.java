@@ -2,7 +2,7 @@ package me.cortex.nvidium.mixin.sodium;
 
 import me.cortex.nvidium.sodiumCompat.IRepackagedResult;
 import me.cortex.nvidium.sodiumCompat.RepackagedSectionOutput;
-import me.jellysquid.mods.sodium.client.render.chunk.compile.ChunkBuildOutput;
+import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;

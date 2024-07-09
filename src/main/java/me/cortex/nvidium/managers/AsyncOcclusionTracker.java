@@ -3,18 +3,18 @@ package me.cortex.nvidium.managers;
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
 import me.cortex.nvidium.sodiumCompat.IRenderSectionExtension;
-import me.jellysquid.mods.sodium.client.SodiumClientMod;
-import me.jellysquid.mods.sodium.client.render.chunk.ChunkUpdateType;
-import me.jellysquid.mods.sodium.client.render.chunk.RenderSection;
-import me.jellysquid.mods.sodium.client.render.chunk.RenderSectionFlags;
-import me.jellysquid.mods.sodium.client.render.chunk.occlusion.OcclusionCuller;
-import me.jellysquid.mods.sodium.client.render.viewport.Viewport;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import org.embeddedt.embeddium.impl.Embeddium;
+import org.embeddedt.embeddium.impl.render.chunk.ChunkUpdateType;
+import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
+import org.embeddedt.embeddium.impl.render.chunk.RenderSectionFlags;
+import org.embeddedt.embeddium.impl.render.chunk.occlusion.OcclusionCuller;
+import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -64,7 +64,7 @@ public class AsyncOcclusionTracker {
             if (!running) break;
             long startTime = System.currentTimeMillis();
 
-            final boolean animateVisibleSpritesOnly = SodiumClientMod.options().performance.animateOnlyVisibleTextures;
+            final boolean animateVisibleSpritesOnly = Embeddium.options().performance.animateOnlyVisibleTextures;
             //The reason for batching is so that ordering is strongly defined
             List<RenderSection> chunkUpdates = new ArrayList<>();
             List<RenderSection> blockEntitySections = new ArrayList<>();
@@ -80,7 +80,7 @@ public class AsyncOcclusionTracker {
                 if (!visible) {
                     return;
                 }
-                if ((section.getFlags()&(1<<RenderSectionFlags.HAS_BLOCK_ENTITIES))!=0 &&
+                if ((section.getFlags()&(1<< RenderSectionFlags.HAS_BLOCK_ENTITIES))!=0 &&
                         section.getPosition().isWithinDistance(viewport.getChunkCoord(),33)) {//32 rd max chunk distance
                     blockEntitySections.add(section);
                 }
@@ -166,7 +166,7 @@ public class AsyncOcclusionTracker {
 
     private float getSearchDistance2() {
         float distance;
-        if (SodiumClientMod.options().performance.useFogOcclusion) {
+        if (Embeddium.options().performance.useFogOcclusion) {
             distance = this.getEffectiveRenderDistance();
         } else {
             distance = this.getRenderDistance();
