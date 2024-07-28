@@ -19,9 +19,7 @@
     "sodium.MixinRenderSectionManager",
     "sodium.MixinSodiumOptionsGUI",
     "sodium.MixinSodiumWorldRenderer",
-    "sodium.SodiumWorldRendererAccessor",
-
-    "sodium.MixinEmbeddiumGameOptionPages"
+    "sodium.SodiumWorldRendererAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

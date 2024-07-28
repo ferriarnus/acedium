@@ -1,5 +1,5 @@
 plugins {
-    id 'dev.architectury.loom'  version '1.6-SNAPSHOT'
+    id 'dev.architectury.loom'  version '1.7-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -50,7 +50,7 @@ dependencies {
     //mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     neoForge "net.neoforged:neoforge:${project.neoforge_version}"
 
-    modImplementation("org.embeddedt:embeddium-1.21:1.0.0-beta.1+mc1.21")
+    modImplementation("org.embeddedt:embeddium-1.21:1.0.7-beta.335+mc1.21")
     //modCompileOnly "maven.modrinth:oculus:1.20.1-1.6.9"
     // Fabric API
     //modImplementation(fabricApi.module("fabric-api-base", project.fabric_version))

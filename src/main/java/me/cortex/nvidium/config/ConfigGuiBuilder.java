@@ -8,7 +8,6 @@ import net.minecraft.util.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import org.checkerframework.checker.units.qual.A;
 import org.embeddedt.embeddium.api.OptionGUIConstructionEvent;
 import org.embeddedt.embeddium.api.options.OptionIdentifier;
 import org.embeddedt.embeddium.api.options.control.ControlValueFormatter;
@@ -26,7 +25,7 @@ import java.util.List;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
 public class ConfigGuiBuilder {
-    private static final NvidiumConfigStore store = new NvidiumConfigStore();
+    private static final NvidiumConfigStore store = NvidiumConfigStore.INSTANCE;
 
     //Options
     public static final Identifier ENABLED = Identifier.of(Nvidium.MOD_ID, "enabled");
@@ -40,6 +39,8 @@ public class ConfigGuiBuilder {
     public static final Identifier STATISTICS = Identifier.of(Nvidium.MOD_ID, "statistics");
 
     //Group
+    public static final Identifier GENERAL = Identifier.of(Nvidium.MOD_ID, "general");
+    public static final Identifier SHADER_GROUP = Identifier.of(Nvidium.MOD_ID, "shader_group");
     public static final Identifier ALL = Identifier.of(Nvidium.MOD_ID, "all");
 
     //Page
@@ -58,7 +59,9 @@ public class ConfigGuiBuilder {
                         .setBinding((opts, value) -> Nvidium.FORCE_DISABLE = value, opts -> Nvidium.FORCE_DISABLE)
                         .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                         .build()
-                ).build());
+                )
+                .setId(GENERAL)
+                .build());
 
         if (Nvidium.IS_COMPATIBLE && !Nvidium.IS_ENABLED && !Nvidium.FORCE_DISABLE) {
             groups.add(OptionGroup.createBuilder()
@@ -71,7 +74,9 @@ public class ConfigGuiBuilder {
                             .setBinding((opts, value) -> {}, opts -> false)
                             .setFlags()
                             .build()
-                    ).build());
+                    )
+                    .setId(SHADER_GROUP)
+                    .build());
         }
         groups.add(OptionGroup.createBuilder()
                 .add(OptionImpl.createBuilder(int.class, store)

@@ -4,19 +4,18 @@ import me.cortex.nvidium.Nvidium;
 import org.embeddedt.embeddium.api.options.structure.OptionStorage;
 
 public class NvidiumConfigStore implements OptionStorage<NvidiumConfig> {
-    private final NvidiumConfig config;
+    public static final NvidiumConfigStore INSTANCE = new NvidiumConfigStore();
 
-    public NvidiumConfigStore() {
-        config = Nvidium.config;
+    private NvidiumConfigStore() {
     }
 
     @Override
     public NvidiumConfig getData() {
-        return config;
+        return Nvidium.config;
     }
 
     @Override
     public void save() {
-        config.save();
+        Nvidium.config.save();
     }
 }
