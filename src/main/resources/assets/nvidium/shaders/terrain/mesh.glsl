@@ -46,8 +46,9 @@ taskNV in Task {
 
 layout(binding = 1) uniform sampler2D tex_light;
 
-vec4 sampleLight(uvec2 uv) {
-    return vec4(texelFetch(tex_light, ivec2(uv), 0).rgb, 1);
+vec4 sampleLight(vec2 uv) {
+    //Its divided by 16 to match sodium/vanilla (it can never be 1 which is funny)
+    return vec4(texture(tex_light, uv).rgb, 1);
 }
 
 

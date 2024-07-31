@@ -36,4 +36,9 @@ public class PersistentClientMappedBuffer extends GlObject implements IClientMap
     public void free() {
         this.delete();
     }
+
+    @Override
+    public long getSize() {
+        return size;
+    }
 }

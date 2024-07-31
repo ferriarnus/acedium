@@ -3,10 +3,12 @@ package me.cortex.nvidium.managers;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import me.cortex.nvidium.Nvidium;
 import me.cortex.nvidium.NvidiumWorldRenderer;
 import me.cortex.nvidium.gl.RenderDevice;
 import me.cortex.nvidium.sodiumCompat.IRepackagedResult;
 import me.cortex.nvidium.util.BufferArena;
+import me.cortex.nvidium.util.SegmentedManager;
 import me.cortex.nvidium.util.UploadingBufferStream;
 import net.minecraft.util.math.ChunkSectionPos;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
@@ -55,12 +57,6 @@ public class SectionManager {
             return;
         }
 
-        //Get the section id or allocate a new instance for it
-        int sectionIdx = this.section2id.computeIfAbsent(
-                sectionKey,
-                key -> this.regionManager.allocateSection(ChunkSectionPos.unpackX(key), ChunkSectionPos.unpackY(key), ChunkSectionPos.unpackZ(key))
-        );
-
         int terrainAddress;
         {
             //Attempt to reuse the same memory
@@ -70,8 +66,15 @@ public class SectionManager {
                 this.terrainAreana.free(terrainAddress);
                 terrainAddress = -1;
             }
+
             if (terrainAddress == -1) {
                 terrainAddress = this.terrainAreana.allocQuads(output.quads());
+            }
+
+            if (terrainAddress == SegmentedManager.SIZE_LIMIT) {
+                Nvidium.LOGGER.error("Terrain arena critically out of memory, expect issues with chunks!!");
+                deleteSection(sectionKey);
+                return;
             }
 
             this.section2terrain.put(sectionKey, terrainAddress);
@@ -79,6 +82,15 @@ public class SectionManager {
             long geometryUpload = terrainAreana.upload(uploadStream, terrainAddress);
             MemoryUtil.memCopy(MemoryUtil.memAddress(output.geometry().getDirectBuffer()), geometryUpload, output.geometry().getLength());
         }
+
+
+
+        //Get the section id or allocate a new instance for it
+        int sectionIdx = this.section2id.computeIfAbsent(
+                sectionKey,
+                key -> this.regionManager.allocateSection(ChunkSectionPos.unpackX(key), ChunkSectionPos.unpackY(key), ChunkSectionPos.unpackZ(key))
+        );
+
 
         long metadata = regionManager.setSectionData(sectionIdx);
         boolean hideSectionBitSet = this.hiddenSectionKeys.contains(sectionKey);

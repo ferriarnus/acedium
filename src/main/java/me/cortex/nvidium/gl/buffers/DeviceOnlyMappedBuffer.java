@@ -41,4 +41,9 @@ public class DeviceOnlyMappedBuffer extends GlObject implements IDeviceMappedBuf
     public void free() {
         this.delete();
     }
+
+    @Override
+    public long getSize() {
+        return this.size;
+    }
 }

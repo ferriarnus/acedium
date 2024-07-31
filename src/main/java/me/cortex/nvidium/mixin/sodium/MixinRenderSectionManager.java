@@ -180,4 +180,11 @@ public class MixinRenderSectionManager implements INvidiumWorldRendererGetter {
             }
         }
     }
+
+    @Inject(method = "getVisibleChunkCount", at = @At("HEAD"), cancellable = true)
+    private void injectVisibilityCount(CallbackInfoReturnable<Integer> cir) {
+        if (Nvidium.IS_ENABLED && Nvidium.config.async_bfs) {
+            cir.setReturnValue(this.renderer.getAsyncBfsVisibilityCount());
+        }
+    }
 }

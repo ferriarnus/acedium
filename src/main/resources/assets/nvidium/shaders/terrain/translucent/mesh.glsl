@@ -41,8 +41,8 @@ layout(location=1) out Interpolants {
 
 layout(binding = 1) uniform sampler2D tex_light;
 
-vec4 sampleLight(uvec2 uv) {
-    return vec4(texelFetch(tex_light, ivec2(uv), 0).rgb, 1);
+vec4 sampleLight(vec2 uv) {
+    return vec4(texture(tex_light, uv).rgb, 1);
 }
 
 void emitQuadIndicies() {

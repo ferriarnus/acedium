@@ -42,8 +42,14 @@ public class UploadingBufferStream {
     private long caddr = -1;
     private long offset = 0;
     public long upload(Buffer buffer, long destOffset, long size) {
-        if (size > Integer.MAX_VALUE) {
+        if (size > Integer.MAX_VALUE || size == 0 || size < 0) {
             throw new IllegalArgumentException();
+        }
+        if (destOffset < 0) {
+            throw new IllegalStateException();
+        }
+        if (destOffset+size > buffer.getSize()) {
+            throw new IllegalStateException();
         }
 
         long addr;

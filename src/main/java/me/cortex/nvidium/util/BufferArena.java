@@ -25,6 +25,7 @@ public class BufferArena {
             buffer = device.createSparseBuffer(80000000000L);//Create a 80gb buffer
         } else {
             buffer = device.createDeviceOnlyMappedBuffer(memory);
+            this.segments.setLimit(memory/(4L*this.vertexFormatSize));
         }
         //Reserve index 0
         this.allocQuads(1);
@@ -33,6 +34,9 @@ public class BufferArena {
     public int allocQuads(int quadCount) {
         totalQuads += quadCount;
         int addr = (int) segments.alloc(quadCount);
+        if (addr == SegmentedManager.SIZE_LIMIT) {
+            return addr;
+        }
         if (buffer instanceof PersistentSparseAddressableBuffer psab) {
             psab.ensureAllocated(Integer.toUnsignedLong(addr) * 4L * vertexFormatSize, quadCount * 4L * vertexFormatSize);
         }
