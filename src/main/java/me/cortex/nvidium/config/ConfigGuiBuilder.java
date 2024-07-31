@@ -180,8 +180,6 @@ public class ConfigGuiBuilder {
 
     @SubscribeEvent
     public static void registerPageEvent(OptionGUIConstructionEvent event) {
-        if (Nvidium.IS_ENABLED) {
-            event.addPage(addNvidiumGui());
-        }
+        event.addPage(addNvidiumGui());
     }
 }
