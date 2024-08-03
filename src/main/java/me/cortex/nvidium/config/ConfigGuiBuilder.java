@@ -23,7 +23,7 @@ import org.embeddedt.embeddium.api.options.structure.OptionPage;
 import java.util.ArrayList;
 import java.util.List;
 
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
+@EventBusSubscriber(modid = Nvidium.MOD_ID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
 public class ConfigGuiBuilder {
     private static final NvidiumConfigStore store = NvidiumConfigStore.INSTANCE;
 
